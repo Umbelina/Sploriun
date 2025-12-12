@@ -397,10 +397,9 @@ export default function App() {
             console.log(`Appointment saved:`, result);
           }
           console.log(`All ${results.length} appointments saved successfully`);
-        } catch (err: unknown) {
+        } catch (err) {
           console.error('Erro ao salvar no Supabase:', err);
-          const message = err instanceof Error ? err.message : String(err);
-          alert(`Erro ao salvar agendamentos: ${message}`);
+          alert(`Erro ao salvar agendamentos: ${err.message}`);
         }
       }
       setShowConfirmation(true);
