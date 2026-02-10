@@ -1,0 +1,98 @@
+/* src/components/OwnerLogin.css */
+
+.owner-login__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* Desktop mantém o seu layout atual */
+.owner-login__left {
+  display: flex;
+}
+
+.owner-login__forgot-password:hover {
+  text-decoration: underline;
+}
+
+.owner-login__mobile-header,
+.owner-login__mobile-features {
+  display: none;
+}
+
+/* Mobile/Tablet (igual Figma) */
+@media (max-width: 1023px) {
+  .owner-login__grid {
+    grid-template-columns: 1fr !important; /* quebra o inline */
+  }
+
+  .owner-login__left {
+    display: none !important; /* some coluna esquerda */
+  }
+
+  .owner-login__right {
+    padding: 24px 16px !important;
+    align-items: center !important;
+  }
+
+  .owner-login__card {
+    padding: 32px 20px !important;
+    max-width: 520px !important;
+    width: 100% !important;
+  }
+
+  .owner-login__mobile-header {
+    display: block !important;
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .owner-login__mobile-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px auto;
+  }
+
+  .owner-login__mobile-features {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 520px;
+    margin-top: 16px;
+  }
+
+  .owner-login__mobile-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .owner-login__mobile-feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #f0f4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .owner-login__mobile-feature-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+}

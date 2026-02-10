@@ -1,2 +1,2 @@
-# GabrielaRolemberg
-Site de Manicure e Pedicure de Gabriela Rolemberg
+# Sploriun
+Site de agendamentos Sploriun para prestadores de serviço.

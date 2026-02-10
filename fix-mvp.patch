@@ -1,0 +1,108 @@
+﻿*** Begin Patch
+*** Update File: App.tsx
+@@
+-import { ImageWithFallback } from './components/figma/ImageWithFallback';
+-import logoImage from './components/figma/LogoImage.jpeg?url';
+-import { getTenantBySlug, listServicesByTenant, createAppointment, getAvailableSlots } from './src/services/db';
++import { ImageWithFallback } from './components/figma/ImageWithFallback';
++import { getTenantBySlug, listServicesByTenant, createAppointment, getAvailableSlots } from './src/services/db';
+*** End Patch
+*** Begin Patch
+*** Update File: App.tsx
+@@
+-  if (!tenant) {
+-    return (
+-      <div className="min-h-screen flex items-center justify-center p-6">
+-        <div className="max-w-md w-full bg-white p-6 rounded-xl shadow text-center">
+-          <ImageWithFallback src={logoImage} alt="logo" className="mx-auto w-20 h-20 rounded-full mb-4" />
+-          <h2 className="mb-2">{message?.text || 'Estabelecimento não encontrado'}</h2>
+-        </div>
+-      </div>
+-    );
+-  }
++  if (!tenant) {
++    return (
++      <div className="min-h-screen flex items-center justify-center p-6">
++        <div className="max-w-md w-full bg-white p-6 rounded-xl shadow text-center">
++          <div className="mx-auto w-20 h-20 rounded-full mb-4 overflow-hidden">
++            <div className="w-20 h-20 bg-gray-100 flex items-center justify-center text-xl font-semibold">
++              {slug ? (slug.slice(0,2).toUpperCase()) : '—'}
++            </div>
++          </div>
++          <h2 className="mb-2">{message?.text || 'Estabelecimento não encontrado'}</h2>
++        </div>
++      </div>
++    );
++  }
+@@
+-          <ImageWithFallback src={logoImage} alt={tenant.display_name || tenant.slug} className="mx-auto w-24 h-24 rounded-full" />
++          <ImageWithFallback src={tenant.logo_url ?? undefined} alt={tenant.display_name || tenant.slug} className="mx-auto w-24 h-24 rounded-full" />
+*** End Patch
+*** Begin Patch
+*** Update File: src/components/OwnerAvailability.tsx
+@@
+-        setPreviewLoading(true);
+-        const dateISO = `${previewDate}T00:00:00-03:00`;
+-        const slots = await generateSlots(tenantId, dateISO, { serviceId: previewServiceId });
++        setPreviewLoading(true);
++        // generateSlots expects 'YYYY-MM-DD' (date-only from input)
++        const dateOnly = previewDate;
++        const slots = await generateSlots(tenantId, dateOnly, { serviceId: previewServiceId });
+*** End Patch
+*** Begin Patch
+*** Update File: src/services/db.ts
+@@
+-export async function getAppointments({ limit = 100, order = 'asc' } = {}) {
+-  // DEPRECATED: use getAppointmentsByTenant em vez desta função
+-  // Esta função não tem filtro de tenant_id, não usar em produção
+-  let q = supabase.from('appointments').select('*');
+-  if (order === 'asc') q = q.order('created_at', { ascending: true });
+-  else q = q.order('created_at', { ascending: false });
+-  if (limit) q = q.limit(limit);
+-  const { data, error } = await q;
+-  if (error) throw error;
+-  return data ?? [];
+-}
++export async function getAppointments({ tenantId, limit = 100, order = 'asc' } : { tenantId?: string; limit?: number; order?: string } = {}) {
++  // Safeguard: require tenantId to avoid accidental data leakage
++  if (!tenantId) throw new Error('Use getAppointmentsByTenant(tenantId) — tenantId required');
++  let q = supabase.from('appointments').select('*').eq('tenant_id', tenantId);
++  if (order === 'asc') q = q.order('created_at', { ascending: true });
++  else q = q.order('created_at', { ascending: false });
++  if (limit) q = q.limit(limit);
++  const { data, error } = await q;
++  if (error) throw error;
++  return data ?? [];
++}
+@@
+-export async function updateAppointment(id: string, updates: Partial<AppointmentInsert>) {
+-  const { data, error } = await supabase.from('appointments').update(updates).eq('id', id).select('*').single();
+-  if (error) throw error;
+-  return data as AppointmentRow;
+-}
++export async function updateAppointment(
++  id: string,
++  updates: Partial<AppointmentInsert>,
++  tenantId?: string
++) {
++  let q = supabase.from('appointments').update(updates).eq('id', id);
++  if (tenantId) q = q.eq('tenant_id', tenantId);
++  const { data, error } = await q.select('*').single();
++  if (error) throw error;
++  return data as AppointmentRow;
++}
+*** End Patch
+*** Begin Patch
+*** Update File: src/components/OwnerAgenda.tsx
+@@
+-      // 2. Cancel old appointment
+-      await updateAppointment(appt.id, {
+-        status: 'canceled',
+-        canceled_at: new Date().toISOString(),
+-      });
++      // 2. Cancel old appointment (scoped to tenant)
++      await updateAppointment(appt.id, {
++        status: 'canceled',
++        canceled_at: new Date().toISOString(),
++      }, tenantId);
+*** End Patch
